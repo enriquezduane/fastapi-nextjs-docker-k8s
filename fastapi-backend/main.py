@@ -36,6 +36,12 @@ async def root():
     return {"message": "Fast Api Exam api v1"}
 
 
+@app.get("/health")
+async def health_check():
+    """Health check endpoint for container orchestration (Docker/Kubernetes)."""
+    return {"status": "healthy"}
+
+
 @app.get("/trip", status_code=status.HTTP_200_OK, response_model=List[schemas.ShowTrip])
 async def all(limit=10, sort='latest', db: Session = Depends(get_db)):
     trip = db.query(models.Trip).limit(limit).all()
