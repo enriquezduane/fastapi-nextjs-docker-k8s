@@ -5,15 +5,12 @@ import schemas
 from database import engine, SessionLocal
 from sqlalchemy.orm import Session
 from typing import List
+import os
 
 app = FastAPI()
 
-origins = [
-    "http://localhost.tiangolo.com",
-    "https://localhost.tiangolo.com",
-    "http://localhost:3000",
-    "http://localhost:8080",
-]
+origins_str = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000")
+origins = origins_str.split(",")
 
 app.add_middleware(
     CORSMiddleware,
