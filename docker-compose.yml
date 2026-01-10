@@ -11,13 +11,24 @@ services:
       - app_network
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 30s
       timeout: 20s
       retries: 10
+      start_period: 60s
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
 
   backend:
     image: enriquezduane/fastapi-backend:latest
     ports:
       - "8000:8000"
+    restart: always
     environment:
       DB_CONNECTION_STRING: ${DB_CONNECTION_STRING}
       ALLOWED_ORIGINS: ${ALLOWED_ORIGINS}
@@ -26,13 +37,42 @@ services:
         condition: service_healthy
     networks:
       - app_network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 256M
 
   frontend:
     image: enriquezduane/next-frontend:latest
     ports:
       - "3000:3000"
+    restart: always
     networks:
       - app_network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 256M
 
 volumes:
   mysql_data:
