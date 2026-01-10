@@ -1,6 +1,17 @@
-__pycache__
-venv
-.env*
-secret*
-.vscode
-db-data
+# Compiled Python files (can cause architecture conflicts and bloat)
+__pycache__/
+*.pyc
+
+# Local virtual environment (dependencies are installed via Dockerfile instead)
+venv/
+.venv/
+
+# Secrets and credentials (should be passed at runtime, not baked into the image)
+.env
+
+# Git metadata (not needed for production and slows down builds)
+.git/
+
+# OS-specific junk files
+.DS_Store
+Thumbs.db
