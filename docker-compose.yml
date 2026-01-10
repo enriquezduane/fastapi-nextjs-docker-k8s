@@ -1,0 +1,57 @@
+services:
+  db:
+    image: mysql:latest
+    container_name: fastapi_next_db
+    restart: always
+    environment:
+      MYSQL_DATABASE: testdb
+      MYSQL_ROOT_PASSWORD: securepassword123
+    ports:
+      - "3307:3306" # Expose on 3307 to avoid conflict with local mysql
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - app_network
+    # Healthcheck ensures DB is actually ready to accept connections
+    healthcheck:
+      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+
+  # 2. Backend Service
+  backend:
+    build:
+      context: ./fastapi-backend/
+    container_name: fastapi_backend
+    depends_on:
+      db:
+        condition: service_healthy # Wait until DB healthcheck passes
+    environment:
+      # We use the service name 'db' as the hostname
+      DB_CONNECTION_STRING: mysql+pymysql://root:securepassword123@db:3306/testdb
+    ports:
+      - "8000:8000"
+    networks:
+      - app_network
+
+  # 3. Frontend Service
+  frontend:
+    build:
+      context: ./next-frontend/
+      args:
+        # Passed to build stage for baking into JS
+        NEXT_PUBLIC_API_URL: http://localhost:8000
+    container_name: nextjs_frontend
+    depends_on:
+      - backend
+    ports:
+      - "3000:3000"
+    networks:
+      - app_network
+
+volumes:
+  db_data:
+
+networks:
+  app_network:
+    driver: bridge
