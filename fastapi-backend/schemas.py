@@ -1,5 +1,5 @@
 from typing import Optional
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 
 class Trip(BaseModel):
@@ -11,5 +11,10 @@ class Trip(BaseModel):
 
 
 class ShowTrip(Trip):
+    # include id in JSON
+    id: int
+
+    # extract using dot notation .id instead of map keys ["id"]
+    model_config = ConfigDict(from_attributes=True)
     pass
-    
+
