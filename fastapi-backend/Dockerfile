@@ -25,5 +25,7 @@ USER fastapi-user
 # Expose the port
 EXPOSE 8000
 
-# Run the application and bind 0.0.0.0 to allow external traffic
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Run the application with gunicorn + uvicorn workers to utilize more CPU cores
+# -w : worker processes
+# -k : use uvicorn's async worker class
+CMD ["gunicorn", "main:app", "-w", "2", "-k", "uvicorn.workers.UvicornWorker", "--bind", "0.0.0.0:8000"]
