@@ -1,0 +1,15 @@
+# Dependencies (should be installed inside the container to match the OS)
+node_modules
+
+# Build output (we want a fresh build inside the container)
+.next
+
+# Sensitive environment variables (should be passed at runtime, not baked into the image)
+.env*
+
+# Version control metadata
+.git
+.gitignore
+
+# Documentation and project metadata (not needed to run the app)
+README.md
