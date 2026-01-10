@@ -20,7 +20,7 @@ const DataTab = () => {
       {data ? (
         <ul>
           {data.map(item => (
-            <li key={item.idx}> {item.name} - {item.description}</li>
+            <li key={item.id}>{item.name} - {item.description} (Joiners: {item.joiner_total_count})</li>
           ))}
         </ul>
       ) : (
