@@ -1,5 +1,6 @@
-# Use slim image since we don't need utility packages (3.15-slim is not out yet)
-FROM python:3.14-slim
+# Use slim image since we don't need utility packages
+# Change from 3.14-slim to 3.11-slim for compatibility with pinned requirements
+FROM python:3.11-slim
 
 # Create a non-privileged user and leave all the GECOS fields (Name, Phone, etc.) blank.
 RUN adduser --disabled-password --gecos "" fastapi-user
