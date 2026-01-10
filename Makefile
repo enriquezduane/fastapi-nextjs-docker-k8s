@@ -4,8 +4,8 @@ include deploy.config
 .PHONY: build push deploy ssh
 
 build:
-	docker build -t $(DOCKER_USER)/fastapi-backend:$(TAG) ./fastapi-backend
-	docker build --build-arg NEXT_PUBLIC_API_URL=$(API_URL) -t $(DOCKER_USER)/next-frontend:$(TAG) ./next-frontend
+	docker build --platform linux/amd64 -t $(DOCKER_USER)/fastapi-backend:$(TAG) ./fastapi-backend
+	docker build --platform linux/amd64 --build-arg NEXT_PUBLIC_API_URL=$(API_URL) -t $(DOCKER_USER)/next-frontend:$(TAG) ./next-frontend
 
 push:
 	docker push $(DOCKER_USER)/fastapi-backend:$(TAG)
