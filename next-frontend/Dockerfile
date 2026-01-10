@@ -1,15 +1,17 @@
 # Stage 1: Dependencies
-FROM node:24-alpine AS deps
+FROM node:24-slim AS deps
 WORKDIR /app
 
 # Copy package files first to leverage cache layers
 COPY package.json ./
 
 # Install dependencies
+# Note: If you have native dependencies (like bcrypt), you might need to run:
+# RUN apt-get update && apt-get install -y python3 make g++ && rm -rf /var/lib/apt/lists/*
 RUN npm install
 
 # Stage 2: Builder
-FROM node:24-alpine AS builder
+FROM node:24-slim AS builder
 WORKDIR /app
 
 # Copy dependencies from the previous stage
@@ -29,24 +31,24 @@ ENV NEXT_TELEMETRY_DISABLED=1
 RUN npm run build
 
 # Stage 3: Runner
-FROM node:24-alpine AS runner
+FROM node:24-slim AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
-# Create a non-privileged user and leave GECOS fields blank
-# (Using -D -g "" is the Alpine equivalent of --disabled-password --gecos "")
-RUN adduser -D -g "" nextjs-user
+# Create a non-privileged user. Use ID 1001 as it's used in the official NextJS Dockerfile example
+RUN groupadd --system --gid 1001 nodejs
+RUN useradd --system --uid 1001 --gid nodejs nextjs
 
 # Copy necessary files from builder
-# We use --chown to give the non-privileged user ownership immediately
-COPY --from=builder --chown=nextjs-user:nextjs-user /app/public ./public
-COPY --from=builder --chown=nextjs-user:nextjs-user /app/.next/standalone ./
-COPY --from=builder --chown=nextjs-user:nextjs-user /app/.next/static ./.next/static
+# CHANGE: Updated --chown to match the new 'nextjs:nodejs' user/group
+COPY --from=builder --chown=nextjs:nodejs /app/public ./public
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
 # Switch to non-privileged user
-USER nextjs-user
+USER nextjs
 
 # Expose the port
 EXPOSE 3000
@@ -54,5 +56,5 @@ EXPOSE 3000
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
-# Run the application and bind 0.0.0.0 to allow external traffic
+# Run the application
 CMD ["node", "server.js"]
