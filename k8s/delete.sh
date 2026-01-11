@@ -4,6 +4,7 @@
 
 echo "=== Deleting K8s Resources ==="
 
+kubectl delete -f 10-argocd-application.yaml
 kubectl delete -f 09-cluster-issuer.yaml
 kubectl delete secret app-tls-secret --ignore-not-found
 kubectl delete -f 08-ingress.yaml
