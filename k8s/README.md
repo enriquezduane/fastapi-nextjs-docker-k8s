@@ -20,16 +20,28 @@ docker build \
 # Push to registry
 docker push enriquezduane/next-frontend:latest
 ```
-## alues
+## Configuration
 
-| Variable | Value |
-|----------|-------|
-| MYSQL_ROOT_PASSWORD | securepassword |
-| MYSQL_DATABASE | testdb |
-| MYSQL_USER | user |
-| MYSQL_PASSWORD | securepassword |
-| DB_CONNECTION_STRING | mysql+pymysql://user:securepassword@mysql:3306/testdb |
-| ALLOWED_ORIGINS | http://167.71.202.208:30080,http://178.128.49.7:30080 |
+Configuration is managed using Kubernetes ConfigMaps and Secrets in `00-config-and-secrets.yaml`:
+
+**ConfigMap (app-config)** - Non-sensitive configuration:
+- MYSQL_DATABASE: testdb
+- MYSQL_USER: user
+- ALLOWED_ORIGINS: http://167.71.202.208:30080,http://178.128.49.7:30080
+
+**Secret (app-secrets)** - Sensitive data:
+- MYSQL_ROOT_PASSWORD: securepassword
+- MYSQL_PASSWORD: securepassword
+- DB_CONNECTION_STRING: mysql+pymysql://user:securepassword@mysql:3306/testdb
+
+To update configuration, edit `00-config-and-secrets.yaml` and apply:
+```bash
+kubectl apply -f 00-config-and-secrets.yaml
+kubectl rollout restart statefulset/mysql
+kubectl rollout restart deployment/backend
+```
+
+
 
 ## Nodes
 

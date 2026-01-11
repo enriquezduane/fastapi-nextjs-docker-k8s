@@ -19,13 +19,19 @@ spec:
           ports:
             - containerPort: 8000
           env:
-            # Hardcoded environment variables
+            # Environment variables from ConfigMap and Secrets
             # Note: 'mysql' is the service name, K8s DNS resolves it
             - name: DB_CONNECTION_STRING
-              value: "mysql+pymysql://user:securepassword@mysql:3306/testdb"
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: DB_CONNECTION_STRING
             # Allow frontend from both nodes on NodePort 30080
             - name: ALLOWED_ORIGINS
-              value: "http://167.71.202.208:30080,http://178.128.49.7:30080"
+              valueFrom:
+                configMapKeyRef:
+                  name: app-config
+                  key: ALLOWED_ORIGINS
           # Health check
           readinessProbe:
             httpGet:

@@ -5,6 +5,9 @@
 echo "=== Deploying to Kubernetes ==="
 
 # Apply all manifests in order
+echo "0. Creating ConfigMaps and Secrets..."
+kubectl apply -f 00-config-and-secrets.yaml
+
 echo "1. Creating MySQL PVC..."
 kubectl apply -f 01-mysql-pvc.yaml
 

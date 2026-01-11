@@ -11,6 +11,7 @@ kubectl delete -f 04-backend-deployment.yaml
 kubectl delete -f 03-mysql-service.yaml
 kubectl delete -f 02-mysql-statefulset.yaml
 kubectl delete -f 01-mysql-pvc.yaml
+kubectl delete -f 00-config-and-secrets.yaml
 
 echo ""
 echo "=== All resources deleted ==="

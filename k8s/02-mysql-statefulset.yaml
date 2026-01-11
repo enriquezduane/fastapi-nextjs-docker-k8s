@@ -20,15 +20,27 @@ spec:
           ports:
             - containerPort: 3306
           env:
-            # Hardcoded environment variables
+            # Environment variables from ConfigMap and Secrets
             - name: MYSQL_ROOT_PASSWORD
-              value: "securepassword"
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: MYSQL_ROOT_PASSWORD
             - name: MYSQL_DATABASE
-              value: "testdb"
+              valueFrom:
+                configMapKeyRef:
+                  name: app-config
+                  key: MYSQL_DATABASE
             - name: MYSQL_USER
-              value: "user"
+              valueFrom:
+                configMapKeyRef:
+                  name: app-config
+                  key: MYSQL_USER
             - name: MYSQL_PASSWORD
-              value: "securepassword"
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: MYSQL_PASSWORD
           volumeMounts:
             - name: mysql-storage
               mountPath: /var/lib/mysql
