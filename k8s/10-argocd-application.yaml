@@ -1,0 +1,46 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: fastapi-nextjs-app
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  
+  source:
+    repoURL: https://github.com/enriquezduane/fastapi-nextjs-docker-k8s.git
+    targetRevision: main
+    path: k8s
+    # Exclude this ArgoCD manifest and shell scripts from sync
+    directory:
+      exclude: '{10-argocd-application.yaml,*.sh}'
+  
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: default
+  
+  syncPolicy:
+    automated:
+      # Auto-sync when Git changes detected
+      prune: true        # Delete resources removed from Git
+      selfHeal: true     # Revert manual changes in cluster
+      allowEmpty: false  # Don't sync if no resources found
+    syncOptions:
+      - CreateNamespace=true
+      - PruneLast=true           # Prune after sync completes
+      - ApplyOutOfSyncOnly=true  # Only apply changed resources
+    retry:
+      limit: 5
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m
+  
+  # Health checks
+  ignoreDifferences:
+    # Ignore fields that change dynamically
+    - group: apps
+      kind: Deployment
+      jsonPointers:
+        - /spec/replicas
