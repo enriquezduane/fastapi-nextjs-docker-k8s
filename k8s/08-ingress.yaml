@@ -1,4 +1,4 @@
-# Nginx Ingress - HTTP routing
+# Nginx Ingress - HTTPS routing with TLS via cert-manager
 # Routes: / -> frontend, /docs -> backend docs, /api/* -> backend (strips /api prefix)
 ---
 apiVersion: networking.k8s.io/v1
@@ -7,10 +7,16 @@ metadata:
   name: app-ingress-docs
   annotations:
     nginx.ingress.kubernetes.io/use-regex: "true"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
 spec:
   ingressClassName: nginx
+  tls:
+    - hosts:
+        - 167.71.202.208.sslip.io
+      secretName: app-tls-secret
   rules:
-    - http:
+    - host: 167.71.202.208.sslip.io
+      http:
         paths:
           # FastAPI docs routes (no rewrite needed)
           - path: /docs
@@ -42,10 +48,16 @@ metadata:
   annotations:
     nginx.ingress.kubernetes.io/use-regex: "true"
     nginx.ingress.kubernetes.io/rewrite-target: /$2
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
 spec:
   ingressClassName: nginx
+  tls:
+    - hosts:
+        - 167.71.202.208.sslip.io
+      secretName: app-tls-secret
   rules:
-    - http:
+    - host: 167.71.202.208.sslip.io
+      http:
         paths:
           # Backend API routes (rewrite /api/xxx -> /xxx)
           - path: /api(/|$)(.*)
@@ -60,10 +72,17 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: app-ingress-frontend
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
 spec:
   ingressClassName: nginx
+  tls:
+    - hosts:
+        - 167.71.202.208.sslip.io
+      secretName: app-tls-secret
   rules:
-    - http:
+    - host: 167.71.202.208.sslip.io
+      http:
         paths:
           # Frontend (catch-all)
           - path: /
