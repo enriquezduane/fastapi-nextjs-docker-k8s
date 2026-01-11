@@ -12,10 +12,10 @@ spec:
   ingressClassName: nginx
   tls:
     - hosts:
-        - 167.71.202.208.sslip.io
+        - enriquezduane.tech
       secretName: app-tls-secret
   rules:
-    - host: 167.71.202.208.sslip.io
+    - host: enriquezduane.tech
       http:
         paths:
           # FastAPI docs routes (no rewrite needed)
@@ -53,10 +53,10 @@ spec:
   ingressClassName: nginx
   tls:
     - hosts:
-        - 167.71.202.208.sslip.io
+        - enriquezduane.tech
       secretName: app-tls-secret
   rules:
-    - host: 167.71.202.208.sslip.io
+    - host: enriquezduane.tech
       http:
         paths:
           # Backend API routes (rewrite /api/xxx -> /xxx)
@@ -78,10 +78,10 @@ spec:
   ingressClassName: nginx
   tls:
     - hosts:
-        - 167.71.202.208.sslip.io
+        - enriquezduane.tech
       secretName: app-tls-secret
   rules:
-    - host: 167.71.202.208.sslip.io
+    - host: enriquezduane.tech
       http:
         paths:
           # Frontend (catch-all)
