@@ -4,26 +4,15 @@ import styles from './page.module.css';
 
 const Home = () => {
   return (
-    <div className={styles.container}>
+    <div>
       <Head>
-        <title>Next.js Data Tab</title>
-        <meta name="description" content="Next.js app that fetches and displays data" />
-        <link rel="icon" href="/favicon.ico" />
+        <title>Trip Manager</title>
+        <meta name="description" content="CRUD App" />
       </Head>
 
-      <main className={styles.main}>
-        <h1 className={styles.title}>Next.js Data App</h1>
-
-        <div className={styles.grid}>
-          <div className={styles.card}>
-            <DataTab />
-          </div>
-        </div>
+      <main className={styles.container}>
+        <DataTab />
       </main>
-
-      <footer className={styles.footer}>
-        <p>Footer content here</p>
-      </footer>
     </div>
   );
 };
