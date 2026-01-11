@@ -1,20 +1,26 @@
-## Access
+## Access (via Nginx Ingress)
 
-- **Frontend**: http://167.71.202.208:30080 or http://178.128.49.7:30080
-- **Backend API**: http://167.71.202.208:30081 or http://178.128.49.7:30081
+- **Frontend**: http://<node-ip>/
+- **Backend Docs**: http://<node-ip>/docs
+- **Backend API**: http://<node-ip>/api/*
+
+Routes:
+- `/` → Frontend (Next.js)
+- `/docs`, `/redoc`, `/openapi.json` → Backend FastAPI docs
+- `/api/*` → Backend API (rewrites to strip `/api` prefix, e.g., `/api/trip` → `/trip`)
 
 ##  IMPORTANT: Rebuild Frontend Image
 
 Frontend uses `NEXT_PUBLIC_API_URL` which is **baked at build time**. 
 
-Need to rebuild the frontend image with the correct backend URL:
+Need to rebuild the frontend image with the correct backend URL (now using `/api` via ingress):
 
 ```bash
 cd next-frontend
 
-# Build with the K8s backend URL
+# Build with the Ingress-based backend URL
 docker build \
-  --build-arg NEXT_PUBLIC_API_URL=http://167.71.202.208:30081 \
+  --build-arg NEXT_PUBLIC_API_URL=http://<node-ip>/api \
   -t enriquezduane/next-frontend:latest .
 
 # Push to registry
@@ -27,7 +33,7 @@ Configuration is managed using Kubernetes ConfigMaps and Secrets in `00-config-a
 **ConfigMap (app-config)** - Non-sensitive configuration:
 - MYSQL_DATABASE: testdb
 - MYSQL_USER: user
-- ALLOWED_ORIGINS: http://167.71.202.208:30080,http://178.128.49.7:30080
+- ALLOWED_ORIGINS: http://167.71.202.208,http://178.128.49.7
 
 **Secret (app-secrets)** - Sensitive data:
 - MYSQL_ROOT_PASSWORD: securepassword

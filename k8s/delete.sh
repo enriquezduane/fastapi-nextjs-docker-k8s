@@ -4,6 +4,7 @@
 
 echo "=== Deleting K8s Resources ==="
 
+kubectl delete -f 08-ingress.yaml
 kubectl delete -f 07-frontend-service.yaml
 kubectl delete -f 06-frontend-deployment.yaml
 kubectl delete -f 05-backend-service.yaml

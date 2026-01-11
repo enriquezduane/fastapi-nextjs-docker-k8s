@@ -1,13 +1,12 @@
-# Backend Service - NodePort (external access)
+# Backend Service - ClusterIP (accessed via Ingress)
 apiVersion: v1
 kind: Service
 metadata:
   name: backend
 spec:
-  type: NodePort
+  type: ClusterIP
   selector:
     app: backend
   ports:
     - port: 8000
       targetPort: 8000
-      nodePort: 30081  # Access via http://<node-ip>:30081

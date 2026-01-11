@@ -32,14 +32,17 @@ kubectl apply -f 06-frontend-deployment.yaml
 echo "7. Creating Frontend Service..."
 kubectl apply -f 07-frontend-service.yaml
 
+echo "8. Creating Ingress..."
+kubectl apply -f 08-ingress.yaml
+
 echo ""
 echo "=== Deployment Complete ==="
 echo ""
 echo "Check status with:"
 echo "  kubectl get pods"
 echo "  kubectl get services"
-echo "  kubectl get pvc"
+echo "  kubectl get ingress"
 echo ""
-echo "Access your app:"
-echo "  Frontend: http://167.71.202.208:30080 or http://178.128.49.7:30080"
-echo "  Backend:  http://167.71.202.208:30081 or http://178.128.49.7:30081"
+echo "Access your app via Ingress (port 80):"
+echo "  Frontend:     http://<node-ip>/"
+echo "  Backend Docs: http://<node-ip>/docs"
