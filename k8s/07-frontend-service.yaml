@@ -1,0 +1,13 @@
+# Frontend Service - NodePort (external access)
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend
+spec:
+  type: NodePort
+  selector:
+    app: frontend
+  ports:
+    - port: 3000
+      targetPort: 3000
+      nodePort: 30080  # Access via http://<node-ip>:30080

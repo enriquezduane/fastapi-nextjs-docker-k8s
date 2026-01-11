@@ -1,0 +1,60 @@
+# MySQL StatefulSet - for database with persistent storage
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mysql
+spec:
+  serviceName: mysql
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mysql
+  template:
+    metadata:
+      labels:
+        app: mysql
+    spec:
+      containers:
+        - name: mysql
+          image: mysql:9.0
+          ports:
+            - containerPort: 3306
+          env:
+            # Hardcoded environment variables
+            - name: MYSQL_ROOT_PASSWORD
+              value: "securepassword"
+            - name: MYSQL_DATABASE
+              value: "testdb"
+            - name: MYSQL_USER
+              value: "user"
+            - name: MYSQL_PASSWORD
+              value: "securepassword"
+          volumeMounts:
+            - name: mysql-storage
+              mountPath: /var/lib/mysql
+          # Simple readiness probe
+          readinessProbe:
+            exec:
+              command:
+                - mysqladmin
+                - ping
+                - -h
+                - localhost
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+          # Liveness probe
+          livenessProbe:
+            exec:
+              command:
+                - mysqladmin
+                - ping
+                - -h
+                - localhost
+            initialDelaySeconds: 60
+            periodSeconds: 30
+            timeoutSeconds: 5
+      volumes:
+        - name: mysql-storage
+          persistentVolumeClaim:
+            claimName: mysql-pvc

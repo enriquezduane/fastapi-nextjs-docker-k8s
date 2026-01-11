@@ -1,0 +1,41 @@
+# FastAPI Backend Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      containers:
+        - name: backend
+          image: enriquezduane/fastapi-backend:latest
+          ports:
+            - containerPort: 8000
+          env:
+            # Hardcoded environment variables
+            # Note: 'mysql' is the service name, K8s DNS resolves it
+            - name: DB_CONNECTION_STRING
+              value: "mysql+pymysql://user:securepassword@mysql:3306/testdb"
+            # Allow frontend from both nodes on NodePort 30080
+            - name: ALLOWED_ORIGINS
+              value: "http://167.71.202.208:30080,http://178.128.49.7:30080"
+          # Health check
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 15
+            periodSeconds: 10
