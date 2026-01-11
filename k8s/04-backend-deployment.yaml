@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: backend
-          image: enriquezduane/fastapi-backend:latest
+          image: enriquezduane/fastapi-backend:999551e46db81d81ba97adc50a4c5302faee0716
           ports:
             - containerPort: 8000
           env:
