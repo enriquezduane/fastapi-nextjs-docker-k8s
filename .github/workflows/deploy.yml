@@ -1,4 +1,4 @@
-name: Build and Push
+name: Unified Deploy
 
 on:
   push:
@@ -7,25 +7,24 @@ on:
     paths:
       - 'next-frontend/**'
       - 'fastapi-backend/**'
-      # Note: Don't include k8s/** here - it causes infinite loops
-      # when the workflow updates image tags in manifests
+      - 'docker-compose.yml'
 
 env:
-  API_URL: "https://enriquezduane.tech/api"
   DOCKER_USER: "enriquezduane"
+  # URL for Kubernetes (Ingress/Domain)
+  K8S_API_URL: "https://enriquezduane.tech/api"
+  # URL for Docker VM (Direct IP)
+  VM_API_URL: "http://159.223.60.185:8000"
 
 permissions:
-  contents: write  # Required to push manifest updates back to repo
+  contents: write
 
 jobs:
-  build-and-deploy:
+  build-and-push:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          persist-credentials: true
 
       - name: Login to Docker Hub
         uses: docker/login-action@v2
@@ -36,40 +35,91 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
 
-      # 1. BUILD BACKEND
-      - name: Build and Push Backend
+      # 1. SHARED BACKEND (Used by both)
+      - name: Build Backend
         uses: docker/build-push-action@v4
         with:
           context: ./fastapi-backend
           push: true
-          tags: ${{ env.DOCKER_USER }}/fastapi-backend:${{ github.sha }}
+          tags: |
+            ${{ env.DOCKER_USER }}/fastapi-backend:${{ github.sha }}
+            ${{ env.DOCKER_USER }}/fastapi-backend:latest
 
-      # 2. BUILD FRONTEND (With Baked Env Var)
-      - name: Build and Push Frontend
+      # 2. FRONTEND FOR KUBERNETES (Domain URL)
+      - name: Build Frontend (K8s)
         uses: docker/build-push-action@v4
         with:
           context: ./next-frontend
           push: true
           build-args: |
-            NEXT_PUBLIC_API_URL=${{ env.API_URL }}
+            NEXT_PUBLIC_API_URL=${{ env.K8S_API_URL }}
           tags: ${{ env.DOCKER_USER }}/next-frontend:${{ github.sha }}
 
-      # 3. UPDATE K8S MANIFESTS
-      - name: Update Kubernetes Manifests
+      # 3. FRONTEND FOR DOCKER VM (IP URL)
+      - name: Build Frontend (Docker VM)
+        uses: docker/build-push-action@v4
+        with:
+          context: ./next-frontend
+          push: true
+          build-args: |
+            NEXT_PUBLIC_API_URL=${{ env.VM_API_URL }}
+          tags: ${{ env.DOCKER_USER }}/next-frontend:vm
+
+  deploy-k8s:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Update K8s Manifests
         run: |
           cd k8s
-
-          # Replace 'latest' or old tag with new commit SHA
+          # Update deployment to use the new specific SHA
           sed -i "s|image: ${DOCKER_USER}/fastapi-backend:.*|image: ${DOCKER_USER}/fastapi-backend:${{ github.sha }}|g" 04-backend-deployment.yaml
           sed -i "s|image: ${DOCKER_USER}/next-frontend:.*|image: ${DOCKER_USER}/next-frontend:${{ github.sha }}|g" 06-frontend-deployment.yaml
 
-          # Check if there are changes
           if [[ -n $(git status -s) ]]; then
             git config --global user.name "GitHub Actions"
             git config --global user.email "actions@github.com"
             git add .
-            git commit -m "chore: update image tags to ${{ github.sha }} [skip ci]"
+            git commit -m "chore: k8s update image tags to ${{ github.sha }} [skip ci]"
             git push
           else
             echo "No changes to manifests."
           fi
+
+  deploy-docker-vm:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to Docker VM via SSH
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.VM_HOST }}
+          username: ${{ secrets.VM_USER }}
+          key: ${{ secrets.VM_SSH_KEY }}
+          script: |
+            # Create app directory if not exists
+            mkdir -p ~/app
+            cd ~/app
+
+            # Download the latest docker-compose.yml from the repo
+            curl -O https://raw.githubusercontent.com/${{ github.repository }}/main/docker-compose.yml
+
+            # Ensure .env file exists (You should set this up once manually on the server)
+            if [ ! -f .env ]; then
+              echo "Error: .env file missing on server!"
+              exit 1
+            fi
+
+            # Pull new images
+            docker compose pull
+
+            # Restart containers
+            docker compose up -d
+
+            # Cleanup unused images
+            docker image prune -f
