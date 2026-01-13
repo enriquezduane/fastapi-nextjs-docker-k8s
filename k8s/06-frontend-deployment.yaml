@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: frontend
-          image: enriquezduane/next-frontend:a92078fb048971810bb0a3177e107c4f1f218f2c
+          image: enriquezduane/next-frontend:ed6831b31495b7d2b76f273a758f4e25fed7cf59
           ports:
             - containerPort: 3000
           resources:
