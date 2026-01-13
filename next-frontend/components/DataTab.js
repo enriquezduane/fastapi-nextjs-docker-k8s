@@ -98,7 +98,7 @@ const DataTab = () => {
     <>
       {/* LEFT SIDE: FORM */}
       <div className={styles.leftPanel}>
-        <h2 className={styles.title}>{editingId ? 'Edit Trip' : 'Create Trip edited'}</h2>
+        <h2 className={styles.title}>{editingId ? 'Edit Trip' : 'Create Trip'}</h2>
         <form onSubmit={handleSubmit}>
           <label>Name</label>
           <input
