@@ -136,7 +136,7 @@ const DataTab = () => {
 
       {/* RIGHT SIDE: LIST */}
       <div className={styles.rightPanel}>
-        <h2 className={styles.title}>All Trips</h2>
+        <h2 className={styles.title}>All Trips edited</h2>
         {loading ? <p>Loading...</p> : (
           <div>
             {data.map(item => (
